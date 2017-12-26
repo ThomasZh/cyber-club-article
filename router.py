@@ -39,6 +39,8 @@ def map():
         (r'/ops/articles/create', getattr(work_sheet, 'ArticlesCreateHandler')),
         (r'/ops/articles/draft', getattr(work_sheet, 'ArticlesDraftHandler')),
         (r'/ops/articles/publish', getattr(work_sheet, 'ArticlesPublishHandler')),
+        (r'/ops/articles/categories', getattr(work_sheet, 'ArticlesCategoriesHandler')),
+        (r'/ops/articles/tags', getattr(work_sheet, 'ArticlesTagsHandler')),
         (r'/ops/articles/edit', getattr(work_sheet, 'ArticlesEditHandler')),
         (r'/ops/edit', getattr(work_sheet, 'VendorEditHandler')),
         (r'/ops/position', getattr(work_sheet, 'VendorPositionHandler')),

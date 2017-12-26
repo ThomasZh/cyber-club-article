@@ -387,6 +387,66 @@ class ArticlesPublishHandler(AuthorizationHandler):
                 api_domain=API_DOMAIN)
 
 
+class ArticlesCategoriesHandler(AuthorizationHandler):
+    @tornado.web.authenticated  # if no session, redirect to login page
+    def get(self):
+        logging.info(self.request)
+        access_token = self.get_secure_cookie("access_token")
+        ops = self.get_ops_info()
+        club = self.get_club_info(ops['club_id'])
+
+        params = {"filter":"club", "club_id":ops['club_id'], "status":"publish"}
+        url = url_concat(API_DOMAIN+"/api/articles", params)
+        http_client = HTTPClient()
+        response = http_client.fetch(url, method="GET")
+        logging.info("got response %r", response.body)
+        data = json_decode(response.body)
+        articles = data['rs']
+
+        # activity['beginTime'] = timestamp_datetime(long(activity['beginTime'] / 1000))
+
+        for article in articles:
+            article['publish_time'] = timestamp_datetime(long(article['publish_time']))
+
+        self.render('article/categories.html',
+                access_token=access_token,
+                ops=ops,
+                club=club,
+                club_id=ops['club_id'],
+                articles=articles,
+                api_domain=API_DOMAIN)
+
+
+class ArticlesTagsHandler(AuthorizationHandler):
+    @tornado.web.authenticated  # if no session, redirect to login page
+    def get(self):
+        logging.info(self.request)
+        access_token = self.get_secure_cookie("access_token")
+        ops = self.get_ops_info()
+        club = self.get_club_info(ops['club_id'])
+
+        params = {"filter":"club", "club_id":ops['club_id'], "status":"publish"}
+        url = url_concat(API_DOMAIN+"/api/articles", params)
+        http_client = HTTPClient()
+        response = http_client.fetch(url, method="GET")
+        logging.info("got response %r", response.body)
+        data = json_decode(response.body)
+        articles = data['rs']
+
+        # activity['beginTime'] = timestamp_datetime(long(activity['beginTime'] / 1000))
+
+        for article in articles:
+            article['publish_time'] = timestamp_datetime(long(article['publish_time']))
+
+        self.render('article/tags.html',
+                access_token=access_token,
+                ops=ops,
+                club=club,
+                club_id=ops['club_id'],
+                articles=articles,
+                api_domain=API_DOMAIN)
+
+
 class ArticlesEditHandler(AuthorizationHandler):
     @tornado.web.authenticated  # if no session, redirect to login page
     def get(self):

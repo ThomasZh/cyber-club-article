@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <!-- Meta, title, CSS, favicons, etc. -->
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Cache-Control" content="no-cache">
+
+  <title>{{ ops['club_name'] }} | Tags</title>
+
+  <!-- Bootstrap core CSS -->
+  <link rel="stylesheet" href="{{ static_url('weui/lib/weui.min.css') }}">
+  <!-- <link rel="stylesheet" href="{{ static_url('weui/css/jquery-weui.css') }}"> -->
+  <link href="{{ static_url('gentelella/bootstrap/dist/css/bootstrap.min.css') }}" rel="stylesheet">
+  <link href="{{ static_url('gentelella/fontawesome/css/font-awesome.min.css') }}" rel="stylesheet">
+  <link href="{{ static_url('gentelella/animate.css/animate.min.css') }}" rel="stylesheet">
+
+  <!-- Custom styling plus plugins -->
+  <link href="{{ static_url('css/custom.css') }}" rel="stylesheet">
+  <link href="{{ static_url('gentelella/iCheck/skins/flat/green.css') }}" rel="stylesheet">
+  <link href="{{ static_url('gentelella/jquery.tagsinput/src/jquery.tagsinput.css') }}" rel="stylesheet">
+  <!-- Custom styling plus plugins -->
+  <script src="{{ static_url('gentelella/jquery/dist/jquery.min.js') }}"></script>
+  <script src="{{ static_url('gentelella/nprogress/nprogress.js') }}"></script>
+  <link rel="stylesheet" href="{{ static_url('upyun/css/fileinput.min.css') }}" />
+  <style media="screen">
+		.total-page-box,.select-page-box{
+			display: inline-block;
+	    font-size: 12px;
+	    line-height: 2.5;
+	    color: #949191;
+		}
+		.select-page-box{
+			margin-left: 10px;
+		}
+	</style>
+</head>
+
+<body class="nav-md">
+  <div class="container body">
+    <div class="main_container">
+      <div class="col-md-3 left_col">
+        <div class="left_col scroll-view">
+          <!-- menu profile quick info -->
+          {% module Template("ops/block-menu-prile-quick-info.html", ops=ops) %}
+          <!-- /menu profile quick info -->
+          <br />
+
+          <!-- sidebar menu -->
+          {% module Template("ops/block-sidebar-menu.html", club=club) %}
+          <!-- /sidebar menu -->
+          <br />
+
+          <!-- /menu footer buttons -->
+          {% module Template("ops/block-menu-footer.html") %}
+          <!-- /menu footer buttons -->
+        </div>
+      </div>
+
+      <!-- top navigation -->
+      {% module Template("ops/block-top-nav.html", ops=ops) %}
+      <!-- /top navigation -->
+
+      <!-- page content -->
+      <div class="right_col" role="main">
+
+        <div class="">
+          <div style="height:auto;" class="page-title">
+            <div class="title_left">
+              <h3>标签Tags</h3>
+            </div>
+
+            <div class="clearfix"></div>
+
+            <div class="row">
+
+              <div class="col-md-12 col-sm-12 col-xs-12">
+                <div class="x_panel">
+                  <div class="x_title">
+                    <h2>tags</h2>
+                    <ul class="nav navbar-right panel_toolbox">
+                    </ul>
+                    <div class="clearfix"></div>
+                  </div>
+                  <div class="x_content" id="x_Box">
+                    <div class="control-group">
+                      <label class="control-label col-md-3 col-sm-3 col-xs-12">添加标签</label>
+                      <div class="col-md-9 col-sm-9 col-xs-9">
+                        <input id="tags_1" type="text" class="tags form-control">
+                        <input id="tags_2" type="text" class="tags" value="" />
+                        <button id ="tag_btn">添加</button>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="clearfix"></div>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- footer content -->
+        {% module Template("ops/block-footer.html", ops=ops) %}
+        <!-- /footer content -->
+
+      </div>
+      <!-- /page content -->
+
+    </div>
+  </div>
+
+  <script src="{{ static_url('gentelella/bootstrap/dist/js/bootstrap.min.js') }}" type="text/javascript"></script>
+  <!-- gauge js -->
+  <script src="{{ static_url('gentelella/gauge.js/dist/gauge.min.js') }}" type="text/javascript"></script>
+  <!-- bootstrap progress js -->
+  <script src="{{ static_url('gentelella/bootstrap-progressbar/bootstrap-progressbar.min.js') }}" type="text/javascript"></script>
+  <!-- icheck -->
+  <script src="{{ static_url('gentelella/iCheck/icheck.min.js') }}" type="text/javascript"></script>
+  <script src="{{ static_url('gentelella/jquery.tagsinput/src/jquery.tagsinput.js') }}" type="text/javascript"></script>
+  <!-- daterangepicker -->
+  <script src="{{ static_url('gentelella/moment/min/moment.min.js') }}" type="text/javascript"></script>
+  <script src="{{ static_url('gentelella/bootstrap-daterangepicker/daterangepicker.js') }}" type="text/javascript"></script>
+  <!-- alert Scripts -->
+  <script src="{{ static_url('weui/lib/fastclick.js') }}"></script>
+  <script src="{{ static_url('js/custom.js') }}" type="text/javascript"></script>
+  <script type="text/javascript" src="{{ static_url('js/json2.js') }}"></script>
+  <script type="text/javascript" src="{{ static_url('js/jquery.validate.min.js') }}"></script>
+  <script>
+  $(function(){
+    //添加tags
+    function onAddTag(tag_name){
+      // $("#tags_1").val('');
+      // var tag_name = tag;
+          // tag_name = $("#tags_2").val();
+          // tag_name = $('#tags_1_tag').val();
+      //     tag_name = text_o!=""?text_o:text_t;
+      // var tags = text.split(',');
+      // for(i=0; i<tags.length; i++) {
+      //   $("#tags_1").addTag(tags[i],{focus:false,callback:false});
+      // }
+      // $("#tags_1").addTag(tag_name,{focus:false,callback:false});
+      var data = {'title':tag_name,'_type':'article'};
+      var _json = JSON.stringify(data);
+      console.log(_json);
+      $.ajax({
+        type: "POST",
+        url: "{{ api_domain }}/api/v2/def/clubs/{{ club_id }}/tags",
+        dataType: "json",
+        data:_json,
+        async:false,
+        headers: {"Authorization":"Bearer {{access_token}}"},
+        contentType: 'application/json',
+        success: function(data, status, xhr) {
+            // console.log(data);
+            queryTags();
+            // location.reload();
+        },
+        error: function(XMLHttpRequest, textStatus, errorThrown) {
+          console.log("XMLHttpRequest.status:" + XMLHttpRequest.status);
+          $('.lostpwd-form-main-message').addClass('error').html(XMLHttpRequest.status + ": 服务器异常,请稍后重试!");
+        },
+        complete: function(XMLHttpRequest, textStatus) {
+          this; // 调用本次AJAX请求时传递的options参数
+        }
+      });
+    };
+
+    $('#tag_btn').on('click',function(){
+      onAddTag();
+    });
+
+    //remove tags
+    function onRemoveTag(tag) {
+        //delete tags
+        $.ajax({
+          type: "DELETE",
+          url: "{{ api_domain }}/api/v2/def/clubs/{{ club_id }}/tags?tag="+tag,
+          dataType: "json",
+          headers: {"Authorization":"Bearer {{access_token}}"},
+          contentType: 'application/json',
+          success: function(data, status, xhr) {
+              queryTags();
+          },
+          error: function(XMLHttpRequest, textStatus, errorThrown) {
+            console.log("XMLHttpRequest.status:" + XMLHttpRequest.status);
+            $('.lostpwd-form-main-message').addClass('error').html(XMLHttpRequest.status + ": 服务器异常,请稍后重试!");
+          },
+          complete: function(XMLHttpRequest, textStatus) {
+            this; // 调用本次AJAX请求时传递的options参数
+          }
+        });
+    };
+      queryTags();
+      $('#tags_1').tagsInput({
+         'width':'auto',  //设置宽度
+         'interactive':true, //是否允许添加标签，false为阻止
+         'defaultText':'添加标签', //默认文字
+         'onAddTag':function(tag){
+              onAddTag(tag);
+          }, //增加标签的回调函数
+         'onRemoveTag':onRemoveTag, //删除标签的回调函数
+        //  'onChange' : callback_function, //改变一个标签时的回调函数
+         'removeWithBackspace' : false, //是否允许使用退格键删除前面的标签，false为阻止
+         'minChars' : 0, //每个标签的小最字符
+         'maxChars' : 0, //每个标签的最大字符，如果不设置或者为0，就是无限大
+      });
+
+      // 查询tags
+      function queryTags() {
+        var random = Math.random().toString(36).substr(2);
+        $.ajax({
+          type: "GET",
+          url: "{{ api_domain }}/api/v2/def/clubs/{{ club_id }}/tags?random="+random,
+          dataType: "json",
+          async:false,
+          contentType: 'application/json',
+          success: function(data, status, xhr) {
+                // console.log(data);
+            var pageData = data.rs;
+            var strs="";
+            for(var i in pageData){
+                strs += pageData[i].title+",";
+            }
+            console.log(strs);
+            strs = strs.substring(0,strs.length-1);
+            $("#tags_1").attr("value",strs);
+          },
+          error: function(XMLHttpRequest, textStatus, errorThrown) {
+            console.log("XMLHttpRequest.status:" + XMLHttpRequest.status);
+            $('.lostpwd-form-main-message').addClass('error').html(XMLHttpRequest.status + ": 服务器异常,请稍后重试!");
+          },
+          complete: function(XMLHttpRequest, textStatus) {
+            this; // 调用本次AJAX请求时传递的options参数
+          }
+        });
+      };
+
+    });
+  </script>
+  </body>
+</html>
