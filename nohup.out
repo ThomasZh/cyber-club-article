@@ -1,0 +1,8 @@
+Traceback (most recent call last):
+  File "index.py", line 47, in <module>
+    main()
+  File "index.py", line 26, in main
+    router.map(),
+  File "/Users/thomas/git/legend-club-ops/router.py", line 35, in map
+    (r'/ops/operators', getattr(work_sheet, 'OperatorsHandler')),
+AttributeError: 'module' object has no attribute 'OperatorsHandler'
