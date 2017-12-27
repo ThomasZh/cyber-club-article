@@ -387,6 +387,32 @@ class ArticlesPublishHandler(AuthorizationHandler):
                 api_domain=API_DOMAIN)
 
 
+class ArticlesTagListHandler(AuthorizationHandler):
+    @tornado.web.authenticated  # if no session, redirect to login page
+    def get(self):
+        logging.info(self.request)
+        tag_name = self.get_argument("tag_name","")
+        logging.info("get tag_name %r",tag_name)
+        ops = self.get_ops_info()
+        club = self.get_club_info(ops['club_id'])
+
+        # params = {"filter":"club", "club_id":ops['club_id'], "status":"publish"}
+        # url = url_concat(API_DOMAIN+"/api/articles", params)
+        # http_client = HTTPClient()
+        # response = http_client.fetch(url, method="GET")
+        # logging.info("got response %r", response.body)
+        # data = json_decode(response.body)
+        # articles = data['rs']
+
+        self.render('article/tag_article_list.html',
+                ops=ops,
+                club=club,
+                tag_name=tag_name,
+                club_id=ops['club_id'],
+                api_domain=API_DOMAIN)
+
+
+# 一级分类
 class ArticlesCategoriesHandler(AuthorizationHandler):
     @tornado.web.authenticated  # if no session, redirect to login page
     def get(self):
@@ -395,28 +421,303 @@ class ArticlesCategoriesHandler(AuthorizationHandler):
         ops = self.get_ops_info()
         club = self.get_club_info(ops['club_id'])
 
-        params = {"filter":"club", "club_id":ops['club_id'], "status":"publish"}
-        url = url_concat(API_DOMAIN+"/api/articles", params)
+        url = API_DOMAIN+"/api/v2/def/clubs/"+ops['club_id']+"/categories"
         http_client = HTTPClient()
         response = http_client.fetch(url, method="GET")
         logging.info("got response %r", response.body)
         data = json_decode(response.body)
-        articles = data['rs']
-
-        # activity['beginTime'] = timestamp_datetime(long(activity['beginTime'] / 1000))
-
-        for article in articles:
-            article['publish_time'] = timestamp_datetime(long(article['publish_time']))
+        categories = data['rs']
 
         self.render('article/categories.html',
                 access_token=access_token,
                 ops=ops,
                 club=club,
                 club_id=ops['club_id'],
-                articles=articles,
+                categories=categories,
                 api_domain=API_DOMAIN)
 
 
+# 添加一级分类
+class ArticlesAddCategoryHandler(AuthorizationHandler):
+    @tornado.web.authenticated  # if no session, redirect to login page
+    def get(self):
+        logging.info(self.request)
+        access_token = self.get_secure_cookie("access_token")
+        ops = self.get_ops_info()
+        club = self.get_club_info(ops['club_id'])
+
+        self.render('article/add_category.html',
+                access_token=access_token,
+                ops=ops,
+                club=club,
+                club_id=ops['club_id'],
+                api_domain=API_DOMAIN,
+                UPYUN_DOMAIN=UPYUN_DOMAIN,
+                UPYUN_NOTIFY_URL=UPYUN_NOTIFY_URL,
+                UPYUN_FORM_API_SECRET=UPYUN_FORM_API_SECRET,
+                UPYUN_BUCKET=UPYUN_BUCKET)
+
+    @tornado.web.authenticated  # if no session, redirect to login page
+    def post(self):
+        logging.info("^^^^^ ^^^^^ ^^^^^ ^^^^^ ^^^^^ ^^^^^ ^^^^^ ^^^^^ ^^^^^ ^^^^^ ^^^^^ ^^^^^ ^^^^^ ^^^^^ ^^^^^")
+        logging.info("^^^^^ ^^^^^ ^^^^^ ^^^^^ ^^^^^ ^^^^^ ^^^^^ ^^^^^ ^^^^^ ^^^^^ ^^^^^ ^^^^^ ^^^^^ ^^^^^ ^^^^^")
+        logging.info("POST %r", self.request.uri)
+
+        title = self.get_argument("title", "")
+        logging.info("got title=[%r]", title)
+        img = self.get_argument("img", "")
+        logging.info("got img=[%r]", img)
+
+        access_token = self.get_secure_cookie("access_token")
+        ops = self.get_ops_info()
+        club = self.get_club_info(ops['club_id'])
+
+        url = API_DOMAIN+"/api/v2/def/clubs/"+ ops['club_id'] +"/categories"
+        http_client = HTTPClient()
+        headers = {"Authorization":"Bearer "+access_token}
+
+        # {"league_id":club['league_id'], "parent_id":DEFAULT_ID, "level":1, "title":title, "img":img, "_type":"article"}
+        _json = json_encode({"title":title, "img":img, "_type":"article"})
+        response = http_client.fetch(url, method="POST", headers=headers, body=_json)
+        logging.info("create category response.body %r", response.body)
+
+        self.redirect("/ops/articles/categories")
+
+
+# 编辑一级分类
+class ArticlesEditCategoryHandler(AuthorizationHandler):
+    @tornado.web.authenticated  # if no session, redirect to login page
+    def get(self):
+        logging.info("^^^^^ ^^^^^ ^^^^^ ^^^^^ ^^^^^ ^^^^^ ^^^^^ ^^^^^ ^^^^^ ^^^^^ ^^^^^ ^^^^^ ^^^^^ ^^^^^ ^^^^^")
+        logging.info("^^^^^ ^^^^^ ^^^^^ ^^^^^ ^^^^^ ^^^^^ ^^^^^ ^^^^^ ^^^^^ ^^^^^ ^^^^^ ^^^^^ ^^^^^ ^^^^^ ^^^^^")
+        logging.info("GET %r", self.request.uri)
+
+        category_id = self.get_argument("_id", "")
+        logging.info("got category_id=[%r]", category_id)
+
+        access_token = self.get_secure_cookie("access_token")
+        ops = self.get_ops_info()
+        club = self.get_club_info(ops['club_id'])
+
+        url = API_DOMAIN+"/api/v2/def/clubs/"+ ops['club_id'] +"/categories/" + category_id
+        http_client = HTTPClient()
+        headers = {"Authorization":"Bearer "+access_token}
+        response = http_client.fetch(url, method="GET", headers=headers)
+        logging.info("got category response.body %r", response.body)
+        data = json_decode(response.body)
+        category = data['rs']
+
+        self.render('article/edit_category.html',
+            ops=ops,
+            club=club,
+            UPYUN_DOMAIN=UPYUN_DOMAIN,
+            UPYUN_NOTIFY_URL=UPYUN_NOTIFY_URL,
+            UPYUN_FORM_API_SECRET=UPYUN_FORM_API_SECRET,
+            UPYUN_BUCKET=UPYUN_BUCKET,
+            category=category)
+
+    @tornado.web.authenticated  # if no session, redirect to login page
+    def post(self):
+        logging.info("^^^^^ ^^^^^ ^^^^^ ^^^^^ ^^^^^ ^^^^^ ^^^^^ ^^^^^ ^^^^^ ^^^^^ ^^^^^ ^^^^^ ^^^^^ ^^^^^ ^^^^^")
+        logging.info("^^^^^ ^^^^^ ^^^^^ ^^^^^ ^^^^^ ^^^^^ ^^^^^ ^^^^^ ^^^^^ ^^^^^ ^^^^^ ^^^^^ ^^^^^ ^^^^^ ^^^^^")
+        logging.info("POST %r", self.request.uri)
+
+        category_id = self.get_argument("_id", "")
+        logging.info("got category_id=[%r]", category_id)
+        _seq = self.get_argument("_seq", "")
+        logging.info("got _seq=[%r]", _seq)
+        title = self.get_argument("title", "")
+        logging.info("got title=[%r]", title)
+        img = self.get_argument("img", "")
+        logging.info("got img=[%r]", img)
+
+        access_token = self.get_secure_cookie("access_token")
+        ops = self.get_ops_info()
+        club = self.get_club_info(ops['club_id'])
+
+        url = API_DOMAIN+"/api/v2/def/clubs/"+ ops['club_id'] +"/categories/"+category_id
+        http_client = HTTPClient()
+        headers = {"Authorization":"Bearer "+access_token}
+        _json = json_encode({ "title":title, "img":img, "_seq":_seq})
+        response = http_client.fetch(url, method="PUT", headers=headers, body=_json)
+        logging.info("update category response.body %r", response.body)
+
+        self.redirect("/ops/articles/categories")
+
+
+# 一级分类下的文章
+class ArticlesCategoryArticleHandler(AuthorizationHandler):
+    @tornado.web.authenticated  # if no session, redirect to login page
+    def get(self):
+        logging.info(self.request)
+        category_id = self.get_argument("_id","")
+        logging.info("get category_id %r",category_id)
+
+        ops = self.get_ops_info()
+        club = self.get_club_info(ops['club_id'])
+
+        self.render('article/category_articles.html',
+                ops=ops,
+                club=club,
+                club_id=ops['club_id'],
+                category_id=category_id,
+                api_domain=API_DOMAIN)
+
+
+# 二级分类
+class ArticlesCategoryLevel2Handler(AuthorizationHandler):
+    @tornado.web.authenticated  # if no session, redirect to login page
+    def get(self):
+        logging.info(self.request)
+        access_token = self.get_secure_cookie("access_token")
+        parent_id = self.get_argument("_id","")
+        logging.info("get parent_id %r",parent_id)
+        ops = self.get_ops_info()
+        club = self.get_club_info(ops['club_id'])
+
+        url = API_DOMAIN+"/api/v2/def/clubs/"+ ops['club_id'] +"/categories/" + parent_id
+        http_client = HTTPClient()
+        headers = {"Authorization":"Bearer "+access_token}
+        response = http_client.fetch(url, method="GET", headers=headers)
+        logging.info("got category response.body %r", response.body)
+        data = json_decode(response.body)
+        parent_category = data['rs']
+
+        url = API_DOMAIN+"/api/v2/def/clubs/"+ ops['club_id'] +"/categories/"+ parent_id +"/children"
+        http_client = HTTPClient()
+        response = http_client.fetch(url, method="GET")
+        logging.info("got response %r", response.body)
+        data = json_decode(response.body)
+        categories = data['rs']
+
+        self.render('article/categories_level2.html',
+                access_token=access_token,
+                ops=ops,
+                club=club,
+                club_id=ops['club_id'],
+                parent_category=parent_category,
+                categories=categories,
+                api_domain=API_DOMAIN)
+
+
+# 添加二级分类
+class ArticlesAddCategoryLevel2Handler(AuthorizationHandler):
+    @tornado.web.authenticated  # if no session, redirect to login page
+    def get(self):
+        logging.info(self.request)
+        access_token = self.get_secure_cookie("access_token")
+        ops = self.get_ops_info()
+        club = self.get_club_info(ops['club_id'])
+        parent_id = self.get_argument('_id',"")
+
+        self.render('article/add_category_level2.html',
+                access_token=access_token,
+                ops=ops,
+                club=club,
+                club_id=ops['club_id'],
+                parent_id=parent_id,
+                api_domain=API_DOMAIN,
+                UPYUN_DOMAIN=UPYUN_DOMAIN,
+                UPYUN_NOTIFY_URL=UPYUN_NOTIFY_URL,
+                UPYUN_FORM_API_SECRET=UPYUN_FORM_API_SECRET,
+                UPYUN_BUCKET=UPYUN_BUCKET)
+
+    @tornado.web.authenticated  # if no session, redirect to login page
+    def post(self):
+        logging.info("^^^^^ ^^^^^ ^^^^^ ^^^^^ ^^^^^ ^^^^^ ^^^^^ ^^^^^ ^^^^^ ^^^^^ ^^^^^ ^^^^^ ^^^^^ ^^^^^ ^^^^^")
+        logging.info("^^^^^ ^^^^^ ^^^^^ ^^^^^ ^^^^^ ^^^^^ ^^^^^ ^^^^^ ^^^^^ ^^^^^ ^^^^^ ^^^^^ ^^^^^ ^^^^^ ^^^^^")
+        logging.info("POST %r", self.request.uri)
+
+        title = self.get_argument("title", "")
+        logging.info("got title=[%r]", title)
+        img = self.get_argument("img", "")
+        logging.info("got img=[%r]", img)
+        parent_id = self.get_argument("parent_id", "")
+        logging.info("got parent_id %r", parent_id)
+
+        access_token = self.get_secure_cookie("access_token")
+        ops = self.get_ops_info()
+        club = self.get_club_info(ops['club_id'])
+
+        url = API_DOMAIN+"/api/v2/def/clubs/"+ ops['club_id'] +"/categories"
+        http_client = HTTPClient()
+        headers = {"Authorization":"Bearer "+access_token}
+        _json = json_encode({"parent_id":parent_id, "title":title, "img":img, "_type":"article"})
+        response = http_client.fetch(url, method="POST", headers=headers, body=_json)
+        logging.info("create category response.body %r", response.body)
+
+        self.redirect("/ops/articles/category/level2?_id="+parent_id)
+
+
+# 编辑二级分类
+class ArticlesEditCategoryLevel2Handler(AuthorizationHandler):
+    @tornado.web.authenticated  # if no session, redirect to login page
+    def get(self):
+        logging.info("^^^^^ ^^^^^ ^^^^^ ^^^^^ ^^^^^ ^^^^^ ^^^^^ ^^^^^ ^^^^^ ^^^^^ ^^^^^ ^^^^^ ^^^^^ ^^^^^ ^^^^^")
+        logging.info("^^^^^ ^^^^^ ^^^^^ ^^^^^ ^^^^^ ^^^^^ ^^^^^ ^^^^^ ^^^^^ ^^^^^ ^^^^^ ^^^^^ ^^^^^ ^^^^^ ^^^^^")
+        logging.info("GET %r", self.request.uri)
+
+        category_id = self.get_argument("_id", "")
+        logging.info("got category_id=[%r]", category_id)
+
+        access_token = self.get_secure_cookie("access_token")
+        ops = self.get_ops_info()
+        club = self.get_club_info(ops['club_id'])
+
+        url = API_DOMAIN+"/api/v2/def/clubs/"+ ops['club_id'] +"/categories/" + category_id
+        http_client = HTTPClient()
+        headers = {"Authorization":"Bearer "+access_token}
+        response = http_client.fetch(url, method="GET", headers=headers)
+        logging.info("got category response.body %r", response.body)
+        data = json_decode(response.body)
+        children_category = data['rs']
+
+        self.render('article/edit_category_level2.html',
+            ops=ops,
+            club=club,
+            UPYUN_DOMAIN=UPYUN_DOMAIN,
+            UPYUN_NOTIFY_URL=UPYUN_NOTIFY_URL,
+            UPYUN_FORM_API_SECRET=UPYUN_FORM_API_SECRET,
+            UPYUN_BUCKET=UPYUN_BUCKET,
+            children_category=children_category)
+
+    @tornado.web.authenticated  # if no session, redirect to login page
+    def post(self):
+        logging.info("^^^^^ ^^^^^ ^^^^^ ^^^^^ ^^^^^ ^^^^^ ^^^^^ ^^^^^ ^^^^^ ^^^^^ ^^^^^ ^^^^^ ^^^^^ ^^^^^ ^^^^^")
+        logging.info("^^^^^ ^^^^^ ^^^^^ ^^^^^ ^^^^^ ^^^^^ ^^^^^ ^^^^^ ^^^^^ ^^^^^ ^^^^^ ^^^^^ ^^^^^ ^^^^^ ^^^^^")
+        logging.info("POST %r", self.request.uri)
+
+        category_id = self.get_argument("_id", "")
+        logging.info("got category_id=[%r]", category_id)
+        _seq = self.get_argument("_seq", "")
+        logging.info("got _seq=[%r]", _seq)
+        title = self.get_argument("title", "")
+        logging.info("got title=[%r]", title)
+        img = self.get_argument("img", "")
+        logging.info("got img=[%r]", img)
+
+        access_token = self.get_secure_cookie("access_token")
+        ops = self.get_ops_info()
+        club = self.get_club_info(ops['club_id'])
+
+        url = API_DOMAIN+"/api/v2/def/clubs/"+ ops['club_id'] +"/categories/" + category_id
+        http_client = HTTPClient()
+        headers = {"Authorization":"Bearer "+access_token}
+        response = http_client.fetch(url, method="GET", headers=headers)
+        logging.info("got category response.body %r", response.body)
+        data = json_decode(response.body)
+        category = data['rs']
+
+        url = API_DOMAIN+"/api/v2/def/clubs/"+ ops['club_id'] +"/categories/"+category_id
+        http_client = HTTPClient()
+        headers = {"Authorization":"Bearer "+access_token}
+        _json = json_encode({"title":title, "img":img, "_seq":_seq})
+        response = http_client.fetch(url, method="PUT", headers=headers, body=_json)
+        logging.info("update category response.body %r", response.body)
+
+        self.redirect("/ops/articles/category/level2?_id="+ category['parent_id'])
+
+# 标签
 class ArticlesTagsHandler(AuthorizationHandler):
     @tornado.web.authenticated  # if no session, redirect to login page
     def get(self):
@@ -469,6 +770,20 @@ class ArticlesEditHandler(AuthorizationHandler):
         data = json_decode(response.body)
         article_categories = data['rs']
 
+        # url = API_DOMAIN+"/api/v2/def/clubs/"+ article['club_id'] +"/tags"
+        # http_client = HTTPClient()
+        # response = http_client.fetch(url, method="GET")
+        # logging.info("got tags response=[%r]", response.body)
+        # data = json_decode(response.body)
+        # tags = data['rs']
+
+        url = API_DOMAIN+"/api/v2/articles/"+ article_id +"/tags"
+        http_client = HTTPClient()
+        response = http_client.fetch(url, method="GET")
+        logging.info("got article_tags response=[%r]", response.body)
+        data = json_decode(response.body)
+        article_tags = data['rs']
+
         ops = self.get_ops_info()
         club = self.get_club_info(ops['club_id'])
 
@@ -479,6 +794,7 @@ class ArticlesEditHandler(AuthorizationHandler):
                 access_token=access_token,
                 article=article,
                 article_categories=article_categories,
+                article_tags=article_tags,
                 api_domain=API_DOMAIN,
                 upyun_domain=UPYUN_DOMAIN,
                 upyun_notify_url=UPYUN_NOTIFY_URL,
