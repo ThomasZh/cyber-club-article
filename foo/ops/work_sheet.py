@@ -763,7 +763,7 @@ class ArticlesEditHandler(AuthorizationHandler):
         data = json_decode(response.body)
         article = data['rs']
 
-        url = API_DOMAIN+"/api/articles/" + article_id + "/categories"
+        url = API_DOMAIN+"/api/v2/articles/"+ article_id +"/categories"
         http_client = HTTPClient()
         response = http_client.fetch(url, method="GET")
         logging.info("got categories response=[%r]", response.body)

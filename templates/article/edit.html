@@ -257,33 +257,29 @@
                     <div class="form-group">
                       <div class="col-md-12 col-sm-12 col-xs-12" id="cate-box">
                         {% for article_categorie in article_categories %}
-                          {% if club['franchise_type'] == 'scenery' or club['franchise_type'] == u'景区' %}
-                            {% if article_categorie['_id'] != '2a28cb78f73411e69a3c00163e023e51' and article_categorie['_id'] != '404228663a1711e7b21000163e023e51' %}
-                              {% if article_categorie['select'] == True %}
-                              <div class="checkbox">
-                                <input style="margin-left:0;" type="checkbox" checked value="{{ article_categorie['_id'] }}">
-                                <label style="padding-left:30px;" for="categories">{{ article_categorie['title'] }}</label>
+                          {% if article_categorie['select'] == True %}
+                            {% if article_categorie['level'] == 1 %}
+                              <div class="tag-wrap">
+                                <input style="margin-left:10px;" type="checkbox" checked value="{{ article_categorie['_id'] }}">
+                                <label for="tags">{{ article_categorie['title'] }}</label>
                               </div>
-                              {% else %}
-                              <div class="checkbox">
-                                <input style="margin-left:0;" type="checkbox" value="{{ article_categorie['_id'] }}">
-                                <label style="padding-left:30px;" for="categories">{{ article_categorie['title'] }}</label>
+                            {% elif article_categorie['level'] == 2 %}
+                              <div class="tag-wrap"  style="margin-left:15px;">
+                                <input style="margin-left:10px;" type="checkbox" checked value="{{ article_categorie['_id'] }}">
+                                <label for="tags">{{ article_categorie['title'] }}</label>
                               </div>
-                              {% end %}
                             {% end %}
-                          {% elif club['franchise_type'] == 'supplier' or club['franchise_type'] == u'供应商' %}
-                            {% if article_categorie['_id'] == '2a28cb78f73411e69a3c00163e023e51' %}
-                              {% if article_categorie['select'] == True %}
-                                <div class="checkbox">
-                                  <input style="margin-left:0;" type="checkbox" checked value="{{ article_categorie['_id'] }}">
-                                  <label style="padding-left:30px;" for="categories">{{ article_categorie['title'] }}</label>
-                                </div>
-                              {% else %}
-                                <div class="checkbox">
-                                  <input style="margin-left:0;" type="checkbox" value="{{ article_categorie['_id'] }}">
-                                  <label style="padding-left:30px;" for="categories">{{ article_categorie['title'] }}</label>
-                                </div>
-                              {% end %}
+                          {% else %}
+                            {% if article_categorie['level'] == 1 %}
+                              <div class="tag-wrap">
+                                <input style="margin-left:10px;" type="checkbox" value="{{ article_categorie['_id'] }}">
+                                <label for="tags">{{ article_categorie['title'] }}</label>
+                              </div>
+                            {% elif article_categorie['level'] == 2 %}
+                              <div class="tag-wrap" style="margin-left:15px;">
+                                <input style="margin-left:10px;" type="checkbox" value="{{ article_categorie['_id'] }}">
+                                <label for="tags">{{ article_categorie['title'] }}</label>
+                              </div>
                             {% end %}
                           {% end %}
                         {% end %}
@@ -554,11 +550,11 @@
         console.log(json);
         var randomWord = Math.random().toString(36).substr(2);
         $.ajax({
-          type: "POST",
-          url: "{{api_domain}}/api/articles/{{ article['_id'] }}/categories?random="+ randomWord +"",
+          type: "PUT",
+          url: "{{api_domain}}/api/v2/articles/{{ article['_id'] }}/categories?random="+ randomWord,
           data: json,
           dataType: "json",
-          headers: {"Authorization":"Bearer {{access_token}}"},
+          headers: {"Authorization":"Bearer {{ access_token }}"},
           contentType: 'application/json',
           success: function(data, status, xhr) {
             console.log(data);
